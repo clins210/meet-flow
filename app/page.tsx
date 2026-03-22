@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Plus, Users, Calendar, User, CalendarCheck } from "lucide-react";
+import { Plus, Users, Calendar, User, CalendarCheck, Trash2 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -268,6 +268,15 @@ export default function MeetFlow() {
     setOpen(false);
   }
 
+  function removeMember(idToRemove: string) {
+    setMembers((prev) => prev.filter((m) => m.id !== idToRemove));
+    
+    // 如果刪除的剛好是目前「查看成員」正在看的對象，就把畫面切回其他成員
+    if (viewId === idToRemove) {
+      const remainingOthers = members.filter((m) => m.id !== "me" && m.id !== idToRemove);
+      setViewId(remainingOthers.length > 0 ? remainingOthers[0].id : "");
+    }
+  }
   return (
     <div className="min-h-screen bg-background">
       {/* ── Header ── */}
@@ -356,11 +365,23 @@ export default function MeetFlow() {
                         {m.availability.length} 個空閒時段
                       </p>
                     </div>
-                    {m.id === "me" && (
-                      <Badge variant="outline" className="text-xs shrink-0">
-                        你
-                      </Badge>
-                    )}
+                    <div className="shrink-0">
+                      {m.id === "me" ? (
+                        <Badge variant="outline" className="text-xs">
+                          你
+                        </Badge>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => removeMember(m.id)}
+                          title="刪除成員"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               ))}
